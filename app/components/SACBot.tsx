@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, KeyboardEvent } from 'react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -11,6 +11,7 @@ export default function SACBot() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -36,6 +37,13 @@ export default function SACBot() {
     setLoading(false);
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow p-6 h-[600px] overflow-y-auto border border-gray-200">
@@ -44,10 +52,10 @@ export default function SACBot() {
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`p-3 rounded-xl max-w-[80%] whitespace-pre-line ${
+              className={`p-3 rounded-xl max-w-[80%] whitespace-pre-line text-sm ${
                 msg.role === 'user'
-                  ? 'ml-auto bg-blue-100 text-right'
-                  : 'mr-auto bg-gray-100'
+                  ? 'ml-auto bg-blue-100 text-blue-900'
+                  : 'mr-auto bg-gray-100 text-gray-800'
               }`}
             >
               {msg.content}
@@ -60,11 +68,13 @@ export default function SACBot() {
       </div>
       <div className="mt-4 flex gap-2">
         <textarea
+          ref={textareaRef}
           rows={2}
           className="w-full border border-gray-300 rounded p-2"
           placeholder="Escribe tu duda sobre admisión, carreras, becas..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
         <button
           onClick={sendMessage}
