@@ -55,7 +55,7 @@ export default function SACBot() {
               className={`p-3 rounded-xl max-w-[80%] whitespace-pre-line text-sm ${
                 msg.role === 'user'
                   ? 'ml-auto bg-blue-100 text-blue-900'
-                  : 'mr-auto bg-gray-100 text-gray-800'
+                  : 'mr-auto bg-gray-200 text-gray-900'
               }`}
             >
               {msg.content}
@@ -70,7 +70,7 @@ export default function SACBot() {
         <textarea
           ref={textareaRef}
           rows={2}
-          className="w-full border border-gray-300 rounded p-2"
+          className="w-full border border-gray-300 rounded p-2 text-gray-900 placeholder-gray-400"
           placeholder="Escribe tu duda sobre admisión, carreras, becas..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
