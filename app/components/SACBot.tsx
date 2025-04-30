@@ -2,45 +2,77 @@
 
 import { useState } from 'react';
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export default function SACBot() {
-  const [message, setMessage] = useState('');
-  const [response, setResponse] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   const sendMessage = async () => {
-    if (!message.trim()) return;
+    if (!input.trim()) return;
+
+    const userMessage: ChatMessage = { role: 'user', content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
     setLoading(true);
+
     const res = await fetch('/api/openai-chat', {
       method: 'POST',
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message: input }),
     });
+
     const data = await res.json();
-    setResponse(data.reply);
+
+    const botMessage: ChatMessage = {
+      role: 'assistant',
+      content: data.reply,
+    };
+
+    setMessages((prev) => [...prev, botMessage]);
     setLoading(false);
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-12 p-4 bg-white rounded shadow border">
-      <h2 className="text-2xl font-semibold text-blue-900 mb-4">Asistente USS | SAC</h2>
-      <textarea
-        className="w-full border p-3 rounded mb-2"
-        rows={4}
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Escribe tu duda sobre admisión, carreras, becas..."
-      />
-      <button
-        onClick={sendMessage}
-        className="bg-blue-800 text-white px-4 py-2 rounded hover:bg-blue-900"
-      >
-        Enviar
-      </button>
-      {loading && <p className="mt-3 text-blue-700">Cargando respuesta...</p>}
-      {response && (
-        <div className="mt-4 p-3 bg-gray-100 rounded border text-sm whitespace-pre-line">
-          {response}
+    <div className="max-w-2xl mx-auto p-4">
+      <div className="bg-white rounded-lg shadow p-6 h-[600px] overflow-y-auto border border-gray-200">
+        <h2 className="text-xl font-bold text-blue-900 mb-4">Asistente USS | SAC</h2>
+        <div className="space-y-4">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`p-3 rounded-xl max-w-[80%] whitespace-pre-line ${
+                msg.role === 'user'
+                  ? 'ml-auto bg-blue-100 text-right'
+                  : 'mr-auto bg-gray-100'
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+          {loading && (
+            <div className="text-gray-500 text-sm italic">Escribiendo respuesta...</div>
+          )}
         </div>
-      )}
+      </div>
+      <div className="mt-4 flex gap-2">
+        <textarea
+          rows={2}
+          className="w-full border border-gray-300 rounded p-2"
+          placeholder="Escribe tu duda sobre admisión, carreras, becas..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-900"
+        >
+          Enviar
+        </button>
+      </div>
     </div>
   );
 }
